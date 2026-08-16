@@ -34,8 +34,8 @@ export default defineConfig({
     rehypePlugins: [rehypeKatex],
     shikiConfig: {
       // For more themes, visit https://shiki.style/themes
-      themes: { light: "min-light", dark: "night-owl" },
-      wrap: true,
+      theme: "github-dark-dimmed",
+      wrap: false,
     },
   },
   vite: {

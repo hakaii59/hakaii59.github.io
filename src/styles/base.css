@@ -31,7 +31,13 @@
     display: block;
   }
   body {
-    @apply flex min-h-[100svh] flex-col bg-skin-fill font-mono text-skin-base selection:bg-skin-accent/70 selection:text-skin-inverted;
+    @apply flex min-h-[100svh] flex-col bg-skin-fill font-sans text-skin-base selection:bg-skin-accent/70 selection:text-skin-inverted;
+  }
+  pre,
+  code,
+  kbd,
+  samp {
+    @apply font-mono;
   }
   section,
   footer {
@@ -47,7 +53,7 @@
     @apply inline-block h-6 w-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110;
   }
   .prose {
-    @apply prose-headings:!mb-3 prose-headings:!text-skin-base prose-h3:italic prose-p:!text-skin-base prose-a:!text-skin-base prose-a:!decoration-dashed prose-a:underline-offset-8 hover:prose-a:text-skin-accent prose-blockquote:!border-l-skin-accent/50 prose-blockquote:opacity-80 prose-figcaption:!text-skin-base prose-figcaption:opacity-70 prose-strong:!text-skin-base prose-code:rounded prose-code:bg-skin-card/75 prose-code:p-1 prose-code:before:!content-none prose-code:after:!content-none prose-ol:!text-skin-base prose-ul:overflow-x-clip prose-ul:!text-skin-base prose-li:marker:!text-skin-accent prose-table:text-skin-base prose-th:border prose-th:border-skin-line prose-td:border prose-td:border-skin-line prose-img:!my-2 prose-img:mx-auto prose-img:border-2 prose-img:border-skin-line prose-hr:!border-skin-line;
+    @apply prose-headings:!mb-3 prose-headings:!font-semibold prose-headings:!text-skin-base prose-h3:italic prose-p:!text-skin-base prose-a:!text-skin-base prose-a:!decoration-dashed prose-a:underline-offset-8 hover:prose-a:text-skin-accent prose-blockquote:not-italic prose-blockquote:!border-l-4 prose-blockquote:!border-gray-600 dark:prose-blockquote:!border-gray-300 prose-blockquote:!font-normal prose-figcaption:!text-skin-base prose-figcaption:opacity-70 prose-strong:!text-skin-base prose-code:rounded-sm prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:text-[0.875em] prose-code:text-rose-800 dark:prose-code:text-rose-300 prose-code:before:!content-none prose-code:after:!content-none prose-pre:!rounded-lg prose-pre:!border-none prose-ol:!text-skin-base prose-ul:overflow-x-clip prose-ul:!text-skin-base prose-li:marker:!text-skin-accent prose-table:text-skin-base prose-th:border prose-th:border-skin-line prose-td:border prose-td:border-skin-line prose-img:!my-2 prose-img:mx-auto prose-img:border-2 prose-img:border-skin-line prose-hr:!my-6 prose-hr:!h-1 prose-hr:!rounded-sm prose-hr:!border-none prose-hr:!bg-skin-accent/30;
   }
   .prose a {
     @apply break-words hover:!text-skin-accent;
@@ -102,10 +108,26 @@
     @apply bg-skin-card-muted;
   }
 
-  /* ===== Code Blocks & Syntax Highlighting ===== */
-  pre:has(code) {
-    @apply border border-skin-line;
+  /* Code block scrollbar: slim + pill-shaped, tuned for the code theme's
+     fixed-dark background regardless of the site's light/dark mode. */
+  pre {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
   }
+  pre::-webkit-scrollbar {
+    @apply h-2;
+  }
+  pre::-webkit-scrollbar-track {
+    @apply rounded-full bg-transparent;
+  }
+  pre::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-white/20;
+  }
+  pre::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/35;
+  }
+
+  /* ===== Code Blocks & Syntax Highlighting ===== */
   code,
   blockquote {
     word-wrap: break-word;
@@ -113,16 +135,6 @@
 
   pre > code {
     white-space: pre;
-  }
-
-  /* Apply Dark Theme (if multi-theme specified) */
-  html[data-theme="dark"] pre:has(code),
-  html[data-theme="dark"] pre:has(code) span {
-    color: var(--shiki-dark) !important;
-    background-color: var(--shiki-dark-bg) !important;
-    font-style: var(--shiki-dark-font-style) !important;
-    font-weight: var(--shiki-dark-font-weight) !important;
-    text-decoration: var(--shiki-dark-text-decoration) !important;
   }
 }
 

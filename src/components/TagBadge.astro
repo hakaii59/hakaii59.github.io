@@ -1,0 +1,38 @@
+---
+import getTagColor from "@utils/getTagColor";
+
+export interface Props {
+  tag: string;
+  tagName: string;
+  count?: number;
+  variant?: "inline" | "chip";
+}
+
+const { tag, tagName, count, variant = "inline" } = Astro.props;
+const color = getTagColor(tag);
+---
+
+{
+  variant === "inline" ? (
+    <a
+      href={`/tags/${tag}/`}
+      class={`inline-block rounded-md px-1 text-sm text-neutral-800 ${color.light} ${color.dark} dark:text-neutral-100`}
+      aria-label={`View more blogs with the tag ${tagName}`}
+    >
+      {tagName}
+    </a>
+  ) : (
+    <a
+      href={`/tags/${tag}/`}
+      class={`flex items-center justify-center rounded-lg px-2 py-0.5 text-sm text-neutral-800 ${color.light} ${color.dark} dark:text-neutral-100`}
+      aria-label={`View all posts with the tag: ${tagName}`}
+    >
+      {tagName}
+      {count !== undefined && (
+        <span class="ml-2 rounded-sm bg-gray-100 px-1 text-xs text-rose-800 dark:bg-gray-800 dark:text-rose-300">
+          {count}
+        </span>
+      )}
+    </a>
+  )
+}

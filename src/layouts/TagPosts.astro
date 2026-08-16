@@ -3,8 +3,8 @@ import Layout from "@layouts/Layout.astro";
 import Main from "@layouts/Main.astro";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
-import Card from "@components/Card";
-import Pagination from "@components/Pagination.astro";
+import WriteupCard from "@components/WriteupCard.astro";
+import Pager from "@components/Pager.astro";
 import { SITE } from "@config";
 import type { Page } from "astro";
 import type { CollectionEntry } from "astro:content";
@@ -26,16 +26,22 @@ const { page, tag, tagName } = Astro.props;
     pageDesc={`All the articles with the tag "${tagName}".`}
   >
     <h1 slot="title" transition:name={tag}>{`Tag:${tag}`}</h1>
-    <ul>
+    <ul class="tag-posts-list">
       {
         page.data.map(({ data, slug }) => (
-          <Card href={`/posts/${slug}/`} frontmatter={data} />
+          <WriteupCard href={`/posts/${slug}/`} frontmatter={data} />
         ))
       }
     </ul>
-  </Main>
 
-  <Pagination {page} />
+    <Pager {page} />
+  </Main>
 
   <Footer noMarginTop={page.lastPage > 1} />
 </Layout>
+
+<style>
+  .tag-posts-list {
+    @apply m-0 list-none space-y-6 p-0;
+  }
+</style>

@@ -2,7 +2,7 @@
 import Layout from "@layouts/Layout.astro";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
-import Tag from "@components/Tag.astro";
+import TagBadge from "@components/TagBadge.astro";
 import Datetime from "@components/Datetime";
 import type { CollectionEntry } from "astro:content";
 import { slugifyStr } from "@utils/slugify";
@@ -64,7 +64,7 @@ const nextPost =
 <Layout {...layoutProps}>
   <Header />
 
-  <div class="mx-auto flex w-full max-w-5xl justify-start px-2">
+  <div class="mx-auto flex w-full max-w-[720px] justify-start px-6">
     <button
       class="focus-outline mb-2 mt-8 flex hover:opacity-75"
       onclick="(() => (history.length === 1) ? window.location = '/' : history.back())()"
@@ -77,9 +77,21 @@ const nextPost =
     </button>
   </div>
   <main id="main-content">
+    <aside
+      id="floating-toc"
+      class="floating-toc"
+      aria-label="Table of contents"
+    />
+    <aside
+      id="footnotes-margin"
+      class="footnotes-margin"
+      aria-label="Footnotes"
+    />
+
     <h1 transition:name={slugifyStr(title)} class="post-title inline-block">
       {title}
     </h1>
+    {description && <p class="post-subtitle">{description}</p>}
     <Datetime
       pubDatetime={pubDatetime}
       modDatetime={modDatetime}
@@ -88,9 +100,26 @@ const nextPost =
       editPost={editPost}
       postId={post.id}
     />
+    {
+      tags.length > 0 && (
+        <div class="post-tags">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="tag-icon"
+            viewBox="0 0 24 24"
+          >
+            <path d="m21.41 11.58-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 .59 1.42l9 9A2 2 0 0 0 13 22a2 2 0 0 0 1.41-.59l7-7A2 2 0 0 0 22 13a2 2 0 0 0-.59-1.42M13 20l-9-9V4h7l9 9M6.5 5A1.5 1.5 0 1 1 5 6.5A1.5 1.5 0 0 1 6.5 5" />
+          </svg>
+          {tags.map(tagName => (
+            <TagBadge tag={slugifyStr(tagName)} tagName={tagName} />
+          ))}
+        </div>
+      )
+    }
+    <hr class="post-divider" />
     <article
       id="article"
-      class="prose mx-auto mt-8 max-w-5xl"
+      class="prose mt-8"
       style="color: var(--color-text-base)"
     >
       <Content />
@@ -103,9 +132,6 @@ const nextPost =
     <div class="text-2xl font-semibold text-skin-base mt-1">{author}</div>
   </div>
 )}
-    <ul class="my-8">
-      {tags.map((tag) => <Tag tag={slugifyStr(tag)} />)}
-    </ul>
 
     <div
       class="flex flex-col-reverse items-center justify-between gap-6 sm:flex-row-reverse sm:items-end sm:gap-4"
@@ -196,17 +222,180 @@ const nextPost =
 
 <style>
   main {
-    @apply mx-auto w-full max-w-5xl px-4 pb-12;
+    @apply relative mx-auto w-full max-w-[720px] px-6 pb-12;
   }
   .post-title {
-    @apply text-2xl font-semibold text-skin-accent;
+    @apply text-3xl font-bold text-skin-base;
+  }
+  .post-subtitle {
+    @apply mt-1 italic text-skin-base opacity-60;
+  }
+  .post-divider {
+    @apply my-4 h-1 w-full rounded-sm border-none bg-skin-accent/30;
+  }
+  .post-tags {
+    @apply mt-2 flex flex-wrap items-center gap-1.5;
+  }
+  .tag-icon {
+    @apply mr-1 inline-block h-4 w-4 fill-skin-base opacity-70;
+  }
+</style>
+
+<style is:global>
+  /* ===== Table of contents: collapsed rail, expands on hover ===== */
+  /* Positioned entirely outside the centered content column (main is
+     720px wide, position:relative) so it never affects that column's
+     width or centering — it just floats in the left margin. */
+  .floating-toc {
+    display: none;
+  }
+  @media (min-width: 1300px) {
+    .floating-toc {
+      @apply top-40 w-56 text-sm;
+      display: block;
+      position: fixed;
+      left: calc(50% - 616px);
+    }
+  }
+  .floating-toc:empty {
+    display: none;
+  }
+  .floating-toc-rail {
+    @apply flex flex-col items-start gap-2 py-1;
+  }
+  .floating-toc-tick {
+    @apply h-0.5 cursor-pointer rounded-full border-none bg-skin-inverted/40 p-0 opacity-70 transition-colors hover:bg-skin-accent hover:opacity-100;
+  }
+  .floating-toc-tick-lv2 {
+    @apply w-5;
+  }
+  .floating-toc-tick-lv3 {
+    @apply ml-1.5 w-4;
+  }
+  .floating-toc-tick-lv4 {
+    @apply ml-3 w-3;
+  }
+  .floating-toc-tick.is-active {
+    @apply bg-skin-accent opacity-100;
+  }
+  .floating-toc-panel {
+    @apply invisible absolute left-0 top-0 z-20 w-64 max-h-[75vh] -translate-x-1 overflow-y-auto rounded-lg border border-skin-line/50 bg-skin-fill p-3 text-sm opacity-0 shadow-xl transition-all duration-150;
+  }
+  .floating-toc:hover .floating-toc-panel,
+  .floating-toc:focus-within .floating-toc-panel {
+    @apply visible translate-x-0 opacity-100;
+  }
+  .floating-toc-heading {
+    @apply mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-skin-base opacity-70;
+  }
+  .floating-toc-list {
+    @apply space-y-1;
+  }
+  .floating-toc-link {
+    @apply block truncate rounded px-2 py-1 text-skin-base opacity-60 decoration-dashed underline-offset-4 hover:opacity-100 hover:underline;
+  }
+  .floating-toc-link.is-active {
+    @apply bg-skin-accent/10 font-medium text-skin-accent opacity-100;
+  }
+
+  /* Slim scrollbars for the TOC hover panel + expanded sidenotes, now that
+     the sitewide scrollbar is hidden and no longer styles these by default. */
+  .floating-toc-panel,
+  .sidenote {
+    scrollbar-width: thin;
+  }
+  .floating-toc-panel::-webkit-scrollbar,
+  .sidenote::-webkit-scrollbar {
+    @apply w-2;
+  }
+  .floating-toc-panel::-webkit-scrollbar-track,
+  .sidenote::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .floating-toc-panel::-webkit-scrollbar-thumb,
+  .sidenote::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-skin-card;
+  }
+  .floating-toc-panel::-webkit-scrollbar-thumb:hover,
+  .sidenote::-webkit-scrollbar-thumb:hover {
+    @apply rounded-full bg-skin-card-muted;
+  }
+
+  /* ===== Footnote sidenotes (right margin) =====
+     Positioned outside the centered content column too (absolute,
+     relative to <main>) so it scrolls with the page like normal content
+     and can be aligned to each footnote's reference paragraph, without
+     affecting the column's width or centering. */
+  .footnotes-margin {
+    display: none;
+  }
+  @media (min-width: 1300px) {
+    .footnotes-margin {
+      @apply w-56;
+      display: block;
+      position: absolute;
+      left: calc(100% + 2rem);
+    }
+  }
+  .footnotes-margin:empty {
+    display: none;
+  }
+  .footnotes-margin-heading {
+    @apply mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-skin-base opacity-70;
+  }
+  .sidenote {
+    @apply absolute left-0 right-0 z-10 max-h-16 overflow-hidden rounded-lg border border-skin-line/50 bg-skin-card/40 p-2 text-xs leading-snug text-skin-base opacity-80 shadow-none transition-all duration-150;
+  }
+  .sidenote-number {
+    @apply mr-1 font-semibold text-skin-accent;
+  }
+  .sidenote:hover,
+  .sidenote:focus-within,
+  .sidenote.sidenote-active {
+    @apply z-20 max-h-96 overflow-y-auto border-skin-accent bg-skin-accent/10 opacity-100 shadow-xl;
+  }
+  /* Hide the default end-of-article footnote list once sidenotes take
+     over on wide screens; it remains the visible fallback on mobile. */
+  .prose .footnotes {
+    @apply lg:hidden;
+  }
+
+  /* ===== Collapsible code blocks =====
+     Code blocks only ever scroll horizontally; vertical sizing is handled
+     entirely by JS (maxHeight), so force overflow-y off in every state to
+     stop the browser from ever reserving/drawing a vertical scrollbar. */
+  .code-block-wrapper pre {
+    overflow-y: hidden;
+  }
+  /* Floats over the bottom-center of the code, on top of the last
+     (clipped) line, rather than sitting as a separate bar below it. */
+  .code-block-toggle {
+    @apply absolute bottom-2 left-1/2 z-10 flex w-fit -translate-x-1/2 cursor-pointer items-center gap-1 whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium text-gray-200 opacity-90 transition-opacity hover:opacity-100;
+    background-color: #22272e;
+  }
+  .code-block-toggle-icon {
+    @apply h-3.5 w-3.5 shrink-0 transition-transform duration-200;
+  }
+  .code-block-wrapper:not(.is-code-collapsed) .code-block-toggle-icon {
+    transform: rotate(180deg);
   }
 </style>
 
 <script is:inline data-astro-rerun>
+  // Astro re-inserts this whole script tag (same content) after every
+  // client-side (View Transitions) navigation because of data-astro-rerun.
+  // Multiple classic <script> tags share one top-level lexical scope, so a
+  // bare `let`/`const` here would throw "already declared" on the second
+  // run and abort the ENTIRE script silently — which is why the TOC and
+  // footnote margin used to go blank until a hard reload. Wrapping
+  // everything in an IIFE gives each run its own scope and avoids that.
+  (function () {
   /** Create a progress indicator
    *  at the top */
   function createProgressBar() {
+    // Re-running this script shouldn't stack up duplicate progress bars.
+    if (document.querySelector(".progress-container")) return;
+
     // Create the main container div
     const progressContainer = document.createElement("div");
     progressContainer.className =
@@ -245,6 +434,213 @@ const nextPost =
   }
   updateScrollProgress();
 
+  /** Builds the floating table-of-contents from the article's headings:
+   *  a slim rail of ticks that's always visible, plus a full text panel
+   *  that expands on hover. Highlights the section currently in view. */
+  function buildFloatingToc() {
+    const container = document.getElementById("floating-toc");
+    const article = document.getElementById("article");
+    if (!container || !article) return;
+
+    container.innerHTML = "";
+    const headings = Array.from(
+      article.querySelectorAll("h2[id], h3[id], h4[id]"),
+    ).filter(heading => heading.id !== "table-of-contents");
+    if (headings.length === 0) return;
+
+    const rail = document.createElement("div");
+    rail.className = "floating-toc-rail";
+
+    const panel = document.createElement("div");
+    panel.className = "floating-toc-panel";
+
+    const panelHeading = document.createElement("p");
+    panelHeading.className = "floating-toc-heading";
+    panelHeading.textContent = "On this page";
+    panel.appendChild(panelHeading);
+
+    const list = document.createElement("ul");
+    list.className = "floating-toc-list";
+    panel.appendChild(list);
+
+    const entries = [];
+    headings.forEach(heading => {
+      const level = Number(heading.tagName.substring(1));
+      const label = heading.textContent?.trim() ?? "";
+
+      const tick = document.createElement("button");
+      tick.type = "button";
+      tick.className = `floating-toc-tick floating-toc-tick-lv${level}`;
+      tick.setAttribute("aria-label", label);
+      rail.appendChild(tick);
+
+      const li = document.createElement("li");
+      li.style.paddingLeft = `${(level - 2) * 0.75}rem`;
+      const link = document.createElement("a");
+      link.href = `#${heading.id}`;
+      link.className = "floating-toc-link";
+      link.textContent = label;
+      li.appendChild(link);
+      list.appendChild(li);
+
+      const goToHeading = event => {
+        event.preventDefault();
+        heading.scrollIntoView({ behavior: "smooth" });
+        history.pushState(null, "", `#${heading.id}`);
+      };
+      tick.addEventListener("click", goToHeading);
+      link.addEventListener("click", goToHeading);
+
+      entries.push({ id: heading.id, tick, link });
+    });
+
+    container.appendChild(rail);
+    container.appendChild(panel);
+
+    const setActive = id => {
+      entries.forEach(({ id: entryId, tick, link }) => {
+        tick.classList.toggle("is-active", entryId === id);
+        link.classList.toggle("is-active", entryId === id);
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      obsEntries => {
+        obsEntries.forEach(entry => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: "-10% 0px -80% 0px", threshold: 0 },
+    );
+    headings.forEach(heading => observer.observe(heading));
+  }
+  buildFloatingToc();
+
+  /** Builds sidenotes in the right margin from the article's footnotes,
+   *  positioned to line up with the numbered reference that cites them. */
+  function buildFootnoteSidenotes() {
+    const container = document.getElementById("footnotes-margin");
+    const article = document.getElementById("article");
+    if (!container || !article) return;
+
+    container.innerHTML = "";
+    const refs = Array.from(
+      article.querySelectorAll("a[data-footnote-ref]"),
+    );
+    if (refs.length === 0) return;
+
+    // Container is position:absolute relative to <main>, and no longer
+    // sits in normal flow next to the article, so align its top edge to
+    // the article's own top before measuring anything below.
+    container.style.top = `${article.offsetTop}px`;
+
+    const heading = document.createElement("p");
+    heading.className = "footnotes-margin-heading";
+    heading.textContent = "Notes";
+    container.appendChild(heading);
+
+    const containerTop = container.getBoundingClientRect().top + window.scrollY;
+    let cursor = heading.getBoundingClientRect().height + 8;
+
+    const entries = [];
+
+    refs.forEach((ref, index) => {
+      const targetId = ref.getAttribute("href")?.slice(1);
+      const source = targetId ? document.getElementById(targetId) : null;
+      if (!source) return;
+
+      const note = document.createElement("div");
+      note.className = "sidenote";
+
+      const number = document.createElement("span");
+      number.className = "sidenote-number";
+      number.textContent = `${index + 1}.`;
+      note.appendChild(number);
+
+      const clone = source.cloneNode(true);
+      clone
+        .querySelectorAll("a[data-footnote-backref]")
+        .forEach(backref => backref.remove());
+      Array.from(clone.childNodes).forEach(node => note.appendChild(node));
+
+      container.appendChild(note);
+
+      const refTop = ref.getBoundingClientRect().top + window.scrollY;
+      const baseTop = Math.max(refTop - containerTop, cursor);
+      note.style.top = `${baseTop}px`;
+
+      // collapsedHeight is measured now, before any hover/active state
+      // has had a chance to expand the note.
+      const collapsedHeight = note.getBoundingClientRect().height;
+      cursor = baseTop + collapsedHeight + 12;
+
+      entries.push({ note, baseTop, collapsedHeight });
+
+      ref.addEventListener("click", event => {
+        if (window.matchMedia("(min-width: 1024px)").matches) {
+          event.preventDefault();
+          note.scrollIntoView({ behavior: "smooth", block: "center" });
+          note.classList.add("sidenote-active");
+          setTimeout(() => note.classList.remove("sidenote-active"), 1500);
+        }
+      });
+    });
+
+    container.style.minHeight = `${cursor}px`;
+
+    // When a note expands (hover/focus), push every note below it down by
+    // however much taller it just became, so the expanded note never
+    // covers the ones that follow. Reverse the push once it collapses.
+    entries.forEach(({ note }, index) => {
+      const pushBelow = extra => {
+        for (let i = index + 1; i < entries.length; i++) {
+          entries[i].note.style.top = `${entries[i].baseTop + extra}px`;
+        }
+      };
+      const expand = () => {
+        const entry = entries[index];
+        const fullHeight = note.scrollHeight;
+        const extra = Math.max(0, fullHeight - entry.collapsedHeight);
+        pushBelow(extra);
+      };
+      const collapse = () => pushBelow(0);
+
+      note.addEventListener("mouseenter", expand);
+      note.addEventListener("mouseleave", collapse);
+      note.addEventListener("focusin", expand);
+      note.addEventListener("focusout", collapse);
+    });
+  }
+  // Code blocks collapse/expand before sidenotes are measured, since
+  // collapsing a tall block shifts everything below it (including any
+  // footnote reference) up — measuring sidenote positions first would
+  // leave them misaligned with the paragraph that cites them.
+  enhanceCodeBlocks();
+  buildFootnoteSidenotes();
+  window.__currentBuildFootnoteSidenotes = buildFootnoteSidenotes;
+
+  // Anything that changes the page's height after this point — lazy
+  // images finishing decode, web fonts swapping in, a code block getting
+  // expanded/collapsed — shifts every paragraph below it, which throws
+  // sidenotes out of alignment with the reference that cites them. Rather
+  // than guess which specific event is responsible, watch the document's
+  // own height and re-measure (debounced) whenever it changes. Bound once
+  // across the whole session; always rebuilds against whichever post is
+  // current, since buildFootnoteSidenotes looks its elements up fresh.
+  if (!window.__footnoteResizeObserverBound) {
+    window.__footnoteResizeObserverBound = true;
+    let footnoteRebuildTimer;
+    const scheduleRebuild = () => {
+      clearTimeout(footnoteRebuildTimer);
+      footnoteRebuildTimer = setTimeout(
+        () => window.__currentBuildFootnoteSidenotes?.(),
+        150,
+      );
+    };
+    new ResizeObserver(scheduleRebuild).observe(document.body);
+    window.addEventListener("resize", scheduleRebuild);
+  }
+
   /** Attaches links to headings in the document,
    *  allowing sharing of sections easily */
   function addHeadingLinks() {
@@ -267,30 +663,75 @@ const nextPost =
   }
   addHeadingLinks();
 
-  /** Attaches copy buttons to code blocks in the document,
-   * allowing users to copy code easily. */
-  function attachCopyButtons() {
-    const copyButtonLabel = "Copy";
+  /** Attaches copy buttons to code blocks, and collapses tall ones behind
+   *  a "Click to expand" toggle so they don't dominate the page. */
+  function enhanceCodeBlocks() {
+    const COLLAPSE_THRESHOLD = 480; // px — only collapse noticeably tall blocks
+    const COLLAPSED_HEIGHT = 340; // px — visible height while collapsed
+
     const codeBlocks = Array.from(document.querySelectorAll("pre"));
 
     for (const codeBlock of codeBlocks) {
       const wrapper = document.createElement("div");
+      wrapper.className = "code-block-wrapper group";
       wrapper.style.position = "relative";
 
       const copyButton = document.createElement("button");
+      copyButton.setAttribute("aria-label", "Copy code to clipboard");
       copyButton.className =
-        "copy-code absolute right-3 -top-3 rounded bg-skin-card px-2 py-1 text-xs leading-4 text-skin-base font-medium";
-      copyButton.innerHTML = copyButtonLabel;
+        "copy-code absolute right-0 top-0 z-10 cursor-pointer border-none p-2 text-gray-500 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100";
+      copyButton.innerHTML = `
+        <svg class="copy-icon h-6 w-6" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-7 0a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1" fill="currentColor"/></svg>
+        <svg class="check-icon hidden h-6 w-6" aria-hidden="true" viewBox="0 0 24 24"><path d="m10 17-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9m-6-6a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1m7 0h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2" fill="currentColor"/></svg>
+      `;
       codeBlock.setAttribute("tabindex", "0");
-      codeBlock.appendChild(copyButton);
 
-      // wrap codebock with relative parent element
+      // wrap codeblock with relative parent element, and place the copy
+      // button as a sibling of <pre> (not a child) so it stays fixed in the
+      // top-right corner instead of scrolling away with the code content.
       codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
       wrapper.appendChild(codeBlock);
+      wrapper.appendChild(copyButton);
 
       copyButton.addEventListener("click", async () => {
         await copyCode(codeBlock, copyButton);
       });
+
+      // Collapse behind a "Click to expand" toggle when the block is tall.
+      // overflow-y stays hidden in every state (code only scrolls
+      // horizontally), so when a horizontal scrollbar is present, pad the
+      // expanded height a bit — otherwise the scrollbar itself eats into
+      // the box and clips the last line.
+      const naturalHeight = codeBlock.scrollHeight;
+      const scrollbarBuffer =
+        codeBlock.scrollWidth > codeBlock.clientWidth ? 12 : 0;
+      if (naturalHeight > COLLAPSE_THRESHOLD) {
+        wrapper.classList.add("is-code-collapsed");
+        codeBlock.style.maxHeight = `${COLLAPSED_HEIGHT}px`;
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "code-block-toggle";
+        toggle.innerHTML = `
+          <span class="code-block-toggle-label">Click to expand</span>
+          <svg class="code-block-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        `;
+        wrapper.appendChild(toggle);
+
+        let expanded = false;
+        toggle.addEventListener("click", () => {
+          expanded = !expanded;
+          wrapper.classList.toggle("is-code-collapsed", !expanded);
+          codeBlock.style.maxHeight = expanded
+            ? `${naturalHeight + scrollbarBuffer}px`
+            : `${COLLAPSED_HEIGHT}px`;
+          toggle.querySelector(".code-block-toggle-label").textContent =
+            expanded ? "Click to collapse" : "Click to expand";
+          if (!expanded) {
+            wrapper.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+        });
+      }
     }
 
     async function copyCode(block, button) {
@@ -300,14 +741,17 @@ const nextPost =
       await navigator.clipboard.writeText(text ?? "");
 
       // visual feedback that task is completed
-      button.innerText = "Copied";
+      const copyIcon = button.querySelector(".copy-icon");
+      const checkIcon = button.querySelector(".check-icon");
+      copyIcon?.classList.add("hidden");
+      checkIcon?.classList.remove("hidden");
 
       setTimeout(() => {
-        button.innerText = copyButtonLabel;
-      }, 700);
+        copyIcon?.classList.remove("hidden");
+        checkIcon?.classList.add("hidden");
+      }, 1000);
     }
   }
-  attachCopyButtons();
 
   /** Scrolls the document to the top when
    * the "Back to Top" button is clicked. */
@@ -323,4 +767,5 @@ const nextPost =
   document.addEventListener("astro:after-swap", () =>
     window.scrollTo({ left: 0, top: 0, behavior: "instant" }),
   );
+  })();
 </script>

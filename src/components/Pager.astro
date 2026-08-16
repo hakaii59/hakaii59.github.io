@@ -1,0 +1,42 @@
+---
+import type { Page } from "astro";
+import type { CollectionEntry } from "astro:content";
+
+export interface Props {
+  page: Page<CollectionEntry<"blog">>;
+}
+
+const { page } = Astro.props;
+---
+
+{
+  page.lastPage > 1 && (
+    <nav class="pager" aria-label="Pagination">
+      {page.url.prev && (
+        <a href={page.url.prev} class="pager-link pager-prev">
+          ← Previous Posts
+        </a>
+      )}
+      {page.url.next && (
+        <a href={page.url.next} class="pager-link pager-next">
+          Next Posts →
+        </a>
+      )}
+    </nav>
+  )
+}
+
+<style>
+  .pager {
+    @apply mt-8 flex items-center gap-x-4;
+  }
+  .pager-link {
+    @apply py-2 text-skin-base opacity-90 hover:text-skin-accent hover:underline hover:underline-offset-4;
+  }
+  .pager-prev {
+    @apply mr-auto;
+  }
+  .pager-next {
+    @apply ml-auto;
+  }
+</style>

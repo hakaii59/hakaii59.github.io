@@ -1,6 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import Card from "@components/Card";
+import WriteupCard from "@components/WriteupCard.astro";
 import Footer from "@components/Footer.astro";
 import Header from "@components/Header.astro";
 import { SITE } from "@config";
@@ -58,7 +58,7 @@ const MonthMap: Record<string, string> = {
                     <span class="font-bold">{MonthMap[month]}</span>
                     <sup class="text-xs">{monthGroup.length}</sup>
                   </div>
-                  <ul>
+                  <ul class="archive-post-list">
                     {monthGroup
                       .sort(
                         (a, b) =>
@@ -70,7 +70,10 @@ const MonthMap: Record<string, string> = {
                           )
                       )
                       .map(({ data, slug }) => (
-                        <Card href={`/posts/${slug}`} frontmatter={data} />
+                        <WriteupCard
+                          href={`/posts/${slug}`}
+                          frontmatter={data}
+                        />
                       ))}
                   </ul>
                 </div>
@@ -82,3 +85,9 @@ const MonthMap: Record<string, string> = {
 
   <Footer />
 </Layout>
+
+<style>
+  .archive-post-list {
+    @apply m-0 w-full list-none space-y-6 p-0;
+  }
+</style>

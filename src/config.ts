@@ -1,19 +1,19 @@
 import type { Site, SocialObjects } from "./types";
 
 export const SITE: Site = {
-  website: "https://cseciitb.github.io/", // replace this with your deployed domain
-  author: "CSeC IITB",
-  profile: "https://cseciitb.github.io/",
-  desc: "Cyber Security Community - IIT Bombay",
-  title: "CSeC",
-  ogImage: "csec_logo.png",
+  website: "https://hakaii59.github.io/", // replace this with your deployed domain
+  author: "hakai's blog",
+  profile: "https://hakaii59.github.io/",
+  desc: "Personal blog documenting CTF writeups, HackTheBox machines, and cyber security explorations.",
+  title: "hakai's blog",
+  ogImage: "hakai.jpg",
   lightAndDarkMode: false,
   postPerIndex: 4,
   postPerPage: 5,
   scheduledPostMargin: 15 * 60 * 1000, // 15 minutes
   showArchives: true,
   editPost: {
-    url: "https://github.com/CSeCIITB/cseciitb.github.io/edit/main/src/content/blog",
+    url: "https://github.com/hakaii59/hakaii59.github.io/edit/main/src/content/blog",
     text: "Suggest Changes",
     appendFilePath: true,
   },
@@ -34,25 +34,25 @@ export const LOGO_IMAGE = {
 export const SOCIALS: SocialObjects = [
   {
     name: "Github",
-    href: "https://github.com/CSeCIITB",
-    linkTitle: ` ${SITE.title} on Github`,
+    href: "https://github.com/hakaii59",
+    linkTitle: `hakaii59 (Giáp Thanh Hữu)`,
     active: true,
   },
-  {
-    name: "Discord",
-    href: "https://discord.gg/hYthhnGVdN",
-    linkTitle: `${SITE.title} on Discord`,
-    active: true,
-  },
-  {
-    name: "Instagram",
-    href: "https://instagram.com/csec.iitb",
-    linkTitle: `${SITE.title} on Instagram`,
-    active: true,
-  },
+  // {
+  //   name: "Discord",
+  //   href: "https://discord.gg/hYthhnGVdN",
+  //   linkTitle: `${SITE.title} on Discord`,
+  //   active: true,
+  // },
+  // {
+  //   name: "Instagram",
+  //   href: "https://instagram.com/csec.iitb",
+  //   linkTitle: `${SITE.title} on Instagram`,
+  //   active: true,
+  // },
   {
     name: "Mail",
-    href: "mailto:csec.iitb@gmail.com",
+    href: "mailto:huugiapthanh@gmail.com",
     linkTitle: `Send an email to ${SITE.title}`,
     active: false,
   },

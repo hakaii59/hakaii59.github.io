@@ -5,7 +5,7 @@ import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
 import LinkButton from "@components/LinkButton.astro";
 import Hr from "@components/Hr.astro";
-import Card from "@components/Card";
+import WriteupCard from "@components/WriteupCard.astro";
 import getSortedPosts from "@utils/getSortedPosts";
 import { SITE, SOCIALS } from "@config";
 
@@ -22,18 +22,17 @@ const socialCount = SOCIALS.filter((social) => social.active).length;
   <Header />
   <main id="main-content">
     <section id="hero">
-      <h1>Cyber Security Community</h1>
+      {/* Commented out
+      <h1>hakai's blog</h1>
       <img src="/csec_logo.png" alt="logo" class="center" />
+      */}
 
       <p>
-        Welcome to the Cyber security community at IIT Bombay! We're a group of
-        enthusiasts who actively participate in Capture The Flag (CTF)
-        competitions. Our mission is simple: to make cyber security accessible
-        and engaging for everyone in the institute. From hands-on workshops to
-        collaborative learning, we're here to equip you with the skills needed
-        to navigate the ever-changing cyber security landscape. Join us in
-        exploring the ins and outs of digital security and let's work together
-        to ensure a safer online environment for all.
+        Welcome to my personal blog! This is where I share my journey through
+        the world of cyber security, CTF competitions, and everything I learn
+        along the way. From writeups and walkthroughs to tools and techniques,
+        I document my explorations here. Whether you're here to follow along or
+        just curious, I hope you find something interesting!
       </p>
       <!-- {
         // only display if at least one social link is enabled
@@ -53,13 +52,9 @@ const socialCount = SOCIALS.filter((social) => social.active).length;
         <>
           <section id="featured">
             <h2>Featured</h2>
-            <ul>
+            <ul class="post-list">
               {featuredPosts.map(({ data, slug }) => (
-                <Card
-                  href={`/posts/${slug}/`}
-                  frontmatter={data}
-                  secHeading={false}
-                />
+                <WriteupCard href={`/posts/${slug}/`} frontmatter={data} />
               ))}
             </ul>
           </section>
@@ -72,15 +67,11 @@ const socialCount = SOCIALS.filter((social) => social.active).length;
       recentPosts.length > 0 && (
         <section id="recent-posts">
           <h2>Recent Posts</h2>
-          <ul>
+          <ul class="post-list">
             {recentPosts.map(
               ({ data, slug }, index) =>
                 index < SITE.postPerIndex && (
-                  <Card
-                    href={`/posts/${slug}/`}
-                    frontmatter={data}
-                    secHeading={false}
-                  />
+                  <WriteupCard href={`/posts/${slug}/`} frontmatter={data} />
                 ),
             )}
           </ul>
@@ -135,6 +126,9 @@ const socialCount = SOCIALS.filter((social) => social.active).length;
   #featured h2,
   #recent-posts h2 {
     @apply text-2xl font-semibold tracking-wide;
+  }
+  .post-list {
+    @apply m-0 mt-4 w-full list-none space-y-6 p-0;
   }
   .all-posts-btn-wrapper {
     @apply my-8 text-center;

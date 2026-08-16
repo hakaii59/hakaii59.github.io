@@ -1,5 +1,5 @@
 ---
-author: CSeCIITB
+author: hakai's blog
 pubDatetime: 2025-01-31T00:00:00Z
 title: TUCTF 2024
 slug: "TUCTF2024"

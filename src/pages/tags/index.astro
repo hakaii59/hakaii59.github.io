@@ -4,21 +4,33 @@ import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
 import Layout from "@layouts/Layout.astro";
 import Main from "@layouts/Main.astro";
-import Tag from "@components/Tag.astro";
-import getUniqueTags from "@utils/getUniqueTags";
+import TagBadge from "@components/TagBadge.astro";
+import getTagsWithCount from "@utils/getTagsWithCount";
 import { SITE } from "@config";
 
 const posts = await getCollection("blog");
 
-let tags = getUniqueTags(posts);
+const tags = getTagsWithCount(posts);
 ---
 
 <Layout title={`Tags | ${SITE.title}`}>
   <Header activeNav="tags" />
   <Main pageTitle="Tags" pageDesc="All the tags used in posts.">
-    <ul>
-      {tags.map(({ tag }) => <Tag {tag} size="lg" />)}
+    <ul class="tag-list">
+      {
+        tags.map(({ tag, tagName, count }) => (
+          <li>
+            <TagBadge tag={tag} tagName={tagName} count={count} variant="chip" />
+          </li>
+        ))
+      }
     </ul>
   </Main>
   <Footer />
 </Layout>
+
+<style>
+  .tag-list {
+    @apply m-0 flex list-none flex-wrap gap-2 p-0;
+  }
+</style>

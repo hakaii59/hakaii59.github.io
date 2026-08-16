@@ -1,10 +1,13 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import Main from "@layouts/Main.astro";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
-import Pagination from "@components/Pagination.astro";
-import Card from "@components/Card";
+import Breadcrumbs from "@components/Breadcrumbs.astro";
+import WriteupCard from "@components/WriteupCard.astro";
+import TagBadge from "@components/TagBadge.astro";
+import Pager from "@components/Pager.astro";
+import getTagsWithCount from "@utils/getTagsWithCount";
+import { getCollection } from "astro:content";
 import { SITE } from "@config";
 import type { Page } from "astro";
 import type { CollectionEntry } from "astro:content";
@@ -14,21 +17,91 @@ export interface Props {
 }
 
 const { page } = Astro.props;
+
+const allPosts = await getCollection("blog");
+const tagsWithCount = getTagsWithCount(allPosts);
 ---
 
 <Layout title={`Posts | ${SITE.title}`}>
   <Header activeNav="posts" />
-  <Main pageTitle="Posts" pageDesc="All the articles we've posted.">
-    <ul>
-      {
-        page.data.map(({ data, slug }) => (
-          <Card href={`/posts/${slug}/`} frontmatter={data} />
-        ))
-      }
-    </ul>
-  </Main>
+  <Breadcrumbs />
+  <main id="main-content">
+    <div class="writeups-grid">
+      <section aria-label="Blog post list" class="writeups-list">
+        <ul>
+          {
+            page.data.map(({ data, slug }) => (
+              <WriteupCard href={`/posts/${slug}/`} frontmatter={data} />
+            ))
+          }
+        </ul>
 
-  <Pagination {page} />
+        <Pager {page} />
+      </section>
 
-  <Footer noMarginTop={page.lastPage > 1} />
+      <aside aria-label="Tags" class="writeups-sidebar">
+        <h2 class="sidebar-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M6.5 10C7.3 10 8 9.3 8 8.5S7.3 7 6.5 7S5 7.7 5 8.5S5.7 10 6.5 10M9 6l7 7l-5 5l-7-7V6zm0-2H4c-1.1 0-2 .9-2 2v5c0 .6.2 1.1.6 1.4l7 7c.3.4.8.6 1.4.6s1.1-.2 1.4-.6l5-5c.4-.4.6-.9.6-1.4c0-.6-.2-1.1-.6-1.4l-7-7C10.1 4.2 9.6 4 9 4m4.5 1.7l1-1l6.9 6.9c.4.4.6.9.6 1.4s-.2 1.1-.6 1.4L16 19.8l-1-1l5.7-5.8z"
+            ></path>
+          </svg>
+          Tags
+        </h2>
+        <ul class="tag-list">
+          {
+            tagsWithCount.map(({ tag, tagName, count }) => (
+              <li>
+                <TagBadge
+                  tag={tag}
+                  tagName={tagName}
+                  count={count}
+                  variant="chip"
+                />
+              </li>
+            ))
+          }
+        </ul>
+        <span class="view-all-wrapper">
+          <a href="/tags/" class="view-all">
+            View all →
+          </a>
+        </span>
+      </aside>
+    </div>
+  </main>
+
+  <Footer />
 </Layout>
+
+<style>
+  #main-content {
+    @apply mx-auto w-full max-w-5xl px-4 pb-4;
+  }
+  .writeups-grid {
+    @apply grid grid-cols-1 gap-y-16 pt-6 sm:grid-cols-4 sm:items-start sm:gap-x-8;
+  }
+  .writeups-list {
+    @apply m-0 w-full max-w-none px-0 sm:col-span-3;
+  }
+  .writeups-list ul {
+    @apply m-0 list-none space-y-6 p-0;
+  }
+  .writeups-sidebar {
+    @apply sm:col-span-1;
+  }
+  .sidebar-title {
+    @apply mb-4 flex items-center gap-2 text-lg font-semibold text-skin-accent;
+  }
+  .sidebar-title svg {
+    @apply h-6 w-6 fill-skin-accent;
+  }
+  .tag-list {
+    @apply flex flex-wrap gap-2;
+  }
+  .view-all-wrapper {
+    @apply mt-4 block sm:text-end;
+  }
+  .view-all {
+    @apply text-sm text-skin-base opacity-90 hover:text-skin-accent hover:underline;
+  }
+</style>
