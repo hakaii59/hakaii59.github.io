@@ -1,12 +1,15 @@
 ---
 pubDatetime: 2025-01-01T00:00:00Z
 title: HackTheBox - Jarvis
-slug: "hackethebox_machine_jarvis"
+slug: "hackethebox-machine-jarvis"
 featured: false
 tags:
   - hackthebox
   - machine
-  - sql_injection
+  - sql-injection
+  - gtfobins
+  - command-injection
+  - cve-2018-12613
 description: "Writeup of the machine in HackTheBox"
 ---
 ![Introduce Image](image.png)
