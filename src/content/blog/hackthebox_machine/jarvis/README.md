@@ -1,5 +1,5 @@
 ---
-pubDatetime: 2025-01-01T00:00:00Z
+pubDatetime: 2026-08-15T00:00:00Z
 title: HackTheBox - Jarvis
 slug: "hackethebox-machine-jarvis"
 featured: false
@@ -733,7 +733,7 @@ bash: no job control in this shell
 root@jarvis:/# cat root/root.txt
 ```
 ![alt text](image-3.png)
-## Reference
+## References
 [1] https://0xdf.gitlab.io/2019/11/09/htb-jarvis.html
 
 
