@@ -4,7 +4,6 @@ import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
 import Layout from "@layouts/Layout.astro";
 import Main from "@layouts/Main.astro";
-import TagBadge from "@components/TagBadge.astro";
 import getTagsWithCount from "@utils/getTagsWithCount";
 import { SITE } from "@config";
 
@@ -15,12 +14,22 @@ const tags = getTagsWithCount(posts);
 
 <Layout title={`Tags | ${SITE.title}`}>
   <Header activeNav="tags" />
-  <Main pageTitle="Tags" pageDesc="All the tags used in posts.">
-    <ul class="tag-list">
+  <Main
+    pageTitle="ls tags/"
+    pageDesc={`${tags.length} tags across every post, most used first.`}
+  >
+    <ul class="flex list-none flex-wrap gap-x-4 gap-y-2 p-0">
       {
         tags.map(({ tag, tagName, count }) => (
           <li>
-            <TagBadge tag={tag} tagName={tagName} count={count} variant="chip" />
+            <a
+              href={`/tags/${tag}/`}
+              class="tag-link"
+              aria-label={`View all posts with the tag: ${tagName}`}
+            >
+              #{tagName}
+              <span class="opacity-60"> {count}</span>
+            </a>
           </li>
         ))
       }
@@ -28,9 +37,3 @@ const tags = getTagsWithCount(posts);
   </Main>
   <Footer />
 </Layout>
-
-<style>
-  .tag-list {
-    @apply m-0 flex list-none flex-wrap gap-2 p-0;
-  }
-</style>

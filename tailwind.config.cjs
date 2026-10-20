@@ -16,6 +16,7 @@ module.exports = {
     // if one breakpoint is not enough for you
     screens: {
       sm: "640px",
+      md: "768px",
       lg: "1024px",
     },
 
@@ -23,17 +24,22 @@ module.exports = {
       textColor: {
         skin: {
           base: withOpacity("--color-text-base"),
+          muted: withOpacity("--color-text-muted"),
           accent: withOpacity("--color-accent"),
+          "accent-2": withOpacity("--color-accent-2"),
           inverted: withOpacity("--color-fill"),
         },
       },
       backgroundColor: {
         skin: {
           fill: withOpacity("--color-fill"),
+          elevated: withOpacity("--color-elevated"),
           accent: withOpacity("--color-accent"),
+          "accent-2": withOpacity("--color-accent-2"),
           inverted: withOpacity("--color-text-base"),
           card: withOpacity("--color-card"),
           "card-muted": withOpacity("--color-card-muted"),
+          line: withOpacity("--color-border"),
         },
       },
       outlineColor: {
@@ -41,28 +47,47 @@ module.exports = {
           fill: withOpacity("--color-accent"),
         },
       },
+      textDecorationColor: {
+        skin: {
+          base: withOpacity("--color-text-base"),
+          muted: withOpacity("--color-text-muted"),
+          accent: withOpacity("--color-accent"),
+          line: withOpacity("--color-border"),
+        },
+      },
       borderColor: {
         skin: {
           line: withOpacity("--color-border"),
           fill: withOpacity("--color-text-base"),
           accent: withOpacity("--color-accent"),
+          "accent-2": withOpacity("--color-accent-2"),
+        },
+      },
+      ringColor: {
+        skin: {
+          accent: withOpacity("--color-accent"),
+          line: withOpacity("--color-border"),
         },
       },
       fill: {
         skin: {
           base: withOpacity("--color-text-base"),
+          muted: withOpacity("--color-text-muted"),
           accent: withOpacity("--color-accent"),
+          "accent-2": withOpacity("--color-accent-2"),
         },
         transparent: "transparent",
       },
       stroke: {
         skin: {
-          accent: withOpacity("--color-accent")
-        }
+          base: withOpacity("--color-text-base"),
+          muted: withOpacity("--color-text-muted"),
+          accent: withOpacity("--color-accent"),
+        },
       },
       fontFamily: {
         sans: [
-          "Rubik",
+          "Inter",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -71,7 +96,7 @@ module.exports = {
           "sans-serif",
         ],
         mono: [
-          "Martian Mono",
+          "JetBrains Mono",
           "ui-monospace",
           "Menlo",
           "Monaco",

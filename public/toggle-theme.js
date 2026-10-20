@@ -1,4 +1,5 @@
-const primaryColorScheme = "dark";
+// "light" | "dark" | "" — empty means follow the visitor's OS preference.
+const primaryColorScheme = "";
 
 // Get theme data from local storage
 const currentTheme = localStorage.getItem("theme");

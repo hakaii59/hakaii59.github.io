@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-09-04T00:00:00Z
 title: HackTheBox - Socket
+category: hackthebox
+subcategory: Machine
 slug: "hackethebox-machine-socket"
 featured: false
 tags:

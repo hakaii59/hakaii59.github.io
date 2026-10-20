@@ -1,0 +1,44 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+import PostExplorer from "@components/PostExplorer";
+import { SITE } from "@config";
+import getSortedPosts from "@utils/getSortedPosts";
+import getTagsWithCount from "@utils/getTagsWithCount";
+import getExplorerPosts from "@utils/getExplorerPosts";
+import { getCategoriesWithCount } from "@utils/getCategory";
+
+const posts = await getCollection("blog", ({ data }) => !data.draft);
+const sortedPosts = getSortedPosts(posts);
+
+// The explorer filters client-side, so every post ships with the page.
+const explorerPosts = getExplorerPosts(sortedPosts);
+const categories = getCategoriesWithCount(sortedPosts).map(
+  ({ key, short, count }) => ({ key, short, count })
+);
+const tags = getTagsWithCount(sortedPosts);
+---
+
+<Layout title={`Posts | ${SITE.title}`}>
+  <Header activeNav="posts" />
+  <main id="main-content" class="wrap pb-6">
+    <h1 class="prompt-heading">ls -a posts/</h1>
+    <p class="mt-2 text-sm text-skin-muted">
+      Everything in one place &mdash; {sortedPosts.length} writeups. Search by
+      keyword, or narrow down by section and tag.
+    </p>
+
+    <div class="mt-7">
+      <PostExplorer
+        client:load
+        posts={explorerPosts}
+        categories={categories}
+        tags={tags}
+      />
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

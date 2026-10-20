@@ -7,23 +7,30 @@ import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
 import SearchBar from "@components/Search";
 import getSortedPosts from "@utils/getSortedPosts";
+import getCategory from "@utils/getCategory";
+import { slugifyAll } from "@utils/slugify";
 
 // Retrieve all published articles
 const posts = await getCollection("blog", ({ data }) => !data.draft);
 const sortedPosts = getSortedPosts(posts);
 
 // List of items to search in
-const searchList = sortedPosts.map(({ data, slug }) => ({
-  title: data.title,
-  description: data.description,
-  data,
-  slug,
+const searchList = sortedPosts.map(post => ({
+  title: post.data.title,
+  description: post.data.description,
+  tagSlugs: slugifyAll(post.data.tags),
+  categoryLabel: getCategory(post).short,
+  data: post.data,
+  slug: post.slug,
 }));
 ---
 
 <Layout title={`Search | ${SITE.title}`}>
   <Header activeNav="search" />
-  <Main pageTitle="Search" pageDesc="Search any article ...">
+  <Main
+    pageTitle="Search"
+    pageDesc="Search every writeup by title, description or tag."
+  >
     <SearchBar client:load searchList={searchList} />
   </Main>
   <Footer />

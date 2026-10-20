@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-10-08T23:00:00Z
 title: HackTheBox - Remote
+category: hackthebox
+subcategory: Machine
 slug: "hackethebox-machine-remote"
 featured: false
 tags:

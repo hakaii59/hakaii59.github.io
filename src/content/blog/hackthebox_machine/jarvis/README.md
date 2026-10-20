@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-08-15T00:00:00Z
 title: HackTheBox - Jarvis
+category: hackthebox
+subcategory: Machine
 slug: "hackethebox-machine-jarvis"
 featured: false
 tags:

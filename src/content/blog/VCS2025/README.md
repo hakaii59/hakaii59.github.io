@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-01-01T12:01:40Z
 title: VCS Passport 2025
+category: ctf
+subcategory: VCS Passport 2025
 slug: "vcs-passport-2025"
 featured: true
 tags:

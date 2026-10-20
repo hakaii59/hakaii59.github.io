@@ -2,7 +2,6 @@
 import Layout from "@layouts/Layout.astro";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
-import TagBadge from "@components/TagBadge.astro";
 import Datetime from "@components/Datetime";
 import type { CollectionEntry } from "astro:content";
 import { slugifyStr } from "@utils/slugify";
@@ -64,9 +63,9 @@ const nextPost =
 <Layout {...layoutProps}>
   <Header />
 
-  <div class="mx-auto flex w-full max-w-[720px] justify-start px-6">
+  <div class="mx-auto flex w-full max-w-3xl justify-start px-5">
     <button
-      class="focus-outline mb-2 mt-8 flex hover:opacity-75"
+      class="focus-outline mb-4 flex items-center font-mono text-sm text-skin-muted hover:text-skin-accent"
       onclick="(() => (history.length === 1) ? window.location = '/' : history.back())()"
     >
       <svg xmlns="http://www.w3.org/2000/svg"
@@ -103,15 +102,14 @@ const nextPost =
     {
       tags.length > 0 && (
         <div class="post-tags">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="tag-icon"
-            viewBox="0 0 24 24"
-          >
-            <path d="m21.41 11.58-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 .59 1.42l9 9A2 2 0 0 0 13 22a2 2 0 0 0 1.41-.59l7-7A2 2 0 0 0 22 13a2 2 0 0 0-.59-1.42M13 20l-9-9V4h7l9 9M6.5 5A1.5 1.5 0 1 1 5 6.5A1.5 1.5 0 0 1 6.5 5" />
-          </svg>
           {tags.map(tagName => (
-            <TagBadge tag={slugifyStr(tagName)} tagName={tagName} />
+            <a
+              href={`/tags/${slugifyStr(tagName)}/`}
+              class="tag-link"
+              aria-label={`View all posts tagged ${tagName}`}
+            >
+              #{tagName}
+            </a>
           ))}
         </div>
       )
@@ -119,7 +117,7 @@ const nextPost =
     <hr class="post-divider" />
     <article
       id="article"
-      class="prose mt-8"
+      class="prose mt-8 max-w-none"
       style="color: var(--color-text-base)"
     >
       <Content />
@@ -127,9 +125,11 @@ const nextPost =
 
 <!-- Author Section -->
 {author && (
-  <div class="mt-16 border-t border-skin-border pt-8 text-center">
-    <div class="text-lg text-skin-muted">Written by</div>
-    <div class="text-2xl font-semibold text-skin-base mt-1">{author}</div>
+  <div class="mt-16 border-t border-skin-line pt-8 text-center">
+    <div class="font-mono text-xs uppercase tracking-widest text-skin-muted">
+      Written by
+    </div>
+    <div class="mt-1 text-lg font-semibold text-skin-base">{author}</div>
   </div>
 )}
 
@@ -222,39 +222,43 @@ const nextPost =
 
 <style>
   main {
-    @apply relative mx-auto w-full max-w-[720px] px-6 pb-12;
+    @apply relative mx-auto w-full max-w-3xl px-5 pb-12;
   }
   .post-title {
-    @apply text-3xl font-bold text-skin-base;
+    @apply text-2xl font-bold leading-tight text-skin-base sm:text-3xl;
   }
   .post-subtitle {
-    @apply mt-1 italic text-skin-base opacity-60;
+    @apply mt-2 text-skin-muted;
   }
   .post-divider {
-    @apply my-4 h-1 w-full rounded-sm border-none bg-skin-accent/30;
+    @apply my-6 h-px w-full border-none bg-skin-line;
   }
   .post-tags {
-    @apply mt-2 flex flex-wrap items-center gap-1.5;
-  }
-  .tag-icon {
-    @apply mr-1 inline-block h-4 w-4 fill-skin-base opacity-70;
+    @apply mt-3 flex flex-wrap items-center gap-x-3 gap-y-1;
   }
 </style>
 
 <style is:global>
   /* ===== Table of contents: collapsed rail, expands on hover ===== */
-  /* Positioned entirely outside the centered content column (main is
-     720px wide, position:relative) so it never affects that column's
-     width or centering — it just floats in the left margin. */
+  /* Lives entirely in the left margin, outside the centered content column,
+     so it never affects that column's width or centering.
+     Geometry (keep these in step with <main>'s max-width):
+       content column   48rem  -> half is 24rem
+       hover panel      16rem  (.floating-toc-panel)
+       gap to content    2.5rem
+     so the rail sits at 50% - (24 + 2.5 + 16) = 50% - 42.5rem, and the
+     panel's right edge lands 2.5rem clear of the text. `max()` keeps it on
+     screen at the narrow end of the range, and the breakpoint is the width
+     at which the panel still clears the column. */
   .floating-toc {
     display: none;
   }
-  @media (min-width: 1300px) {
+  @media (min-width: 1360px) {
     .floating-toc {
       @apply top-40 w-56 text-sm;
       display: block;
       position: fixed;
-      left: calc(50% - 616px);
+      left: max(0.75rem, calc(50% - 42.5rem));
     }
   }
   .floating-toc:empty {
@@ -279,7 +283,7 @@ const nextPost =
     @apply bg-skin-accent opacity-100;
   }
   .floating-toc-panel {
-    @apply invisible absolute left-0 top-0 z-20 w-64 max-h-[75vh] -translate-x-1 overflow-y-auto rounded-lg border border-skin-line/50 bg-skin-fill p-3 text-sm opacity-0 shadow-xl transition-all duration-150;
+    @apply invisible absolute left-0 top-0 z-20 max-h-[75vh] w-64 max-w-[16rem] -translate-x-1 overflow-y-auto rounded-lg border border-skin-line/50 bg-skin-fill p-3 text-sm opacity-0 shadow-xl transition-all duration-150;
   }
   .floating-toc:hover .floating-toc-panel,
   .floating-toc:focus-within .floating-toc-panel {

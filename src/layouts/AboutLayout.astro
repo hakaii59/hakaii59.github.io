@@ -1,6 +1,5 @@
 ---
 import { SITE } from "@config";
-import Breadcrumbs from "@components/Breadcrumbs.astro";
 import Footer from "@components/Footer.astro";
 import Header from "@components/Header.astro";
 import Layout from "./Layout.astro";
@@ -17,17 +16,11 @@ const { frontmatter } = Astro.props;
 
 <Layout title={`${frontmatter.title} | ${SITE.title}`}>
   <Header activeNav="about" />
-  <Breadcrumbs />
-  <main id="main-content">
-    <section id="about" class="prose mb-28 max-w-5xl prose-img:border-0">
-      <h1
-        class="text-2xl tracking-wider sm:text-3xl"
-        style="text-align: center;"
-      >
-        {frontmatter.title}
-      </h1>
+  <main id="main-content" class="wrap pb-12">
+    <h1 class="prompt-heading">cat about.md</h1>
+    <article class="prose mt-7 max-w-none">
       <slot />
-    </section>
+    </article>
   </main>
   <Footer />
 </Layout>

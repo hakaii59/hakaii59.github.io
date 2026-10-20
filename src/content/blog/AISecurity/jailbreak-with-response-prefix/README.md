@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-05-10T12:01:40Z
 title: Jailbreak with response prefix
+category: research
+subcategory: AI Security
 slug: "jailbreak-with-response-prefix"
 featured: true
 tags:

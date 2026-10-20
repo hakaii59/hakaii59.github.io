@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-09-13T23:00:00Z
 title: HackTheBox - Legacy
+category: hackthebox
+subcategory: Machine
 slug: "hackethebox-machine-legacy"
 featured: false
 tags:

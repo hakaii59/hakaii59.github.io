@@ -3,8 +3,9 @@ import Layout from "@layouts/Layout.astro";
 import Main from "@layouts/Main.astro";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
-import WriteupCard from "@components/WriteupCard.astro";
+import PostCard from "@components/PostCard";
 import Pager from "@components/Pager.astro";
+import getCategory from "@utils/getCategory";
 import { SITE } from "@config";
 import type { Page } from "astro";
 import type { CollectionEntry } from "astro:content";
@@ -21,15 +22,18 @@ const { page, tag, tagName } = Astro.props;
 <Layout title={`Tag: ${tagName} | ${SITE.title}`}>
   <Header activeNav="tags" />
   <Main
-    pageTitle={[`Tag:`, `${tagName}`]}
+    pageTitle={["grep -r ", `#${tagName}`]}
     titleTransition={tag}
-    pageDesc={`All the articles with the tag "${tagName}".`}
+    pageDesc={`${page.total} post${page.total === 1 ? "" : "s"} tagged "${tagName}".`}
   >
-    <h1 slot="title" transition:name={tag}>{`Tag:${tag}`}</h1>
-    <ul class="tag-posts-list">
+    <ul class="divide-y divide-skin-line p-0">
       {
-        page.data.map(({ data, slug }) => (
-          <WriteupCard href={`/posts/${slug}/`} frontmatter={data} />
+        page.data.map(post => (
+          <PostCard
+            href={`/posts/${post.slug}/`}
+            frontmatter={post.data}
+            categoryLabel={getCategory(post).short}
+          />
         ))
       }
     </ul>
@@ -39,9 +43,3 @@ const { page, tag, tagName } = Astro.props;
 
   <Footer noMarginTop={page.lastPage > 1} />
 </Layout>
-
-<style>
-  .tag-posts-list {
-    @apply m-0 list-none space-y-6 p-0;
-  }
-</style>

@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-09-16T19:01:40Z
 title: K17 CTF 2026 - java notes
+category: ctf
+subcategory: K17 CTF 2026
 slug: "k17-ctf-2026-java-notes"
 featured: true
 tags:

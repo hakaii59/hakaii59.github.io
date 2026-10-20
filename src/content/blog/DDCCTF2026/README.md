@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-08-25T12:01:40Z
 title: DDC CTF 2026
+category: ctf
+subcategory: DDC CTF 2026
 slug: "ddc-ctf-2026"
 featured: true
 tags:

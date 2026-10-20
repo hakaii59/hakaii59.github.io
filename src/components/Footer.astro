@@ -1,6 +1,5 @@
 ---
-import Hr from "./Hr.astro";
-import Socials from "./Socials.astro";
+import { FOOTER_LINKS, NAV_LINKS, SITE, SOCIALS } from "@config";
 
 const currentYear = new Date().getFullYear();
 
@@ -9,37 +8,83 @@ export interface Props {
 }
 
 const { noMarginTop = false } = Astro.props;
+
+const secondaryLinks = FOOTER_LINKS.filter(
+  link => link.key !== "archives" || SITE.showArchives
+);
+
+const socials = SOCIALS.filter(social => social.active);
 ---
 
-<footer class={`${noMarginTop ? "" : "mt-auto"}`}>
-  <Hr noPadding />
-  <div class="footer-wrapper">
-    <Socials centered />
-    <div class="copyright-wrapper">
-      <span>Copyright &#169; {currentYear}</span>
-      <span class="separator">&nbsp;|&nbsp;</span>
-      <span>All rights reserved.</span>
-    </div>
+<footer class={noMarginTop ? "" : "mt-auto"}>
+  <div class="wrap pb-10 pt-6">
+    <div class="divider" aria-hidden="true">* * *</div>
+
+    <nav aria-label="Footer">
+      <ul
+        class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm"
+      >
+        {
+          NAV_LINKS.map(({ label, href }, index) => (
+            <li class="flex items-center gap-2">
+              {index > 0 && (
+                <span class="text-skin-muted" aria-hidden="true">
+                  &bull;
+                </span>
+              )}
+              <a href={href} class="text-skin-muted hover:text-skin-accent">
+                {label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <ul
+        class="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-mono text-xs"
+      >
+        {
+          secondaryLinks.map(({ label, href }, index) => (
+            <li class="flex items-center gap-2">
+              {index > 0 && (
+                <span class="text-skin-muted" aria-hidden="true">
+                  &bull;
+                </span>
+              )}
+              <a href={href} class="text-skin-muted hover:text-skin-accent">
+                {label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    {
+      socials.length > 0 && (
+        <div class="mt-6 text-center">
+          <p class="font-mono text-xs uppercase tracking-widest text-skin-muted">
+            Find me on
+          </p>
+          <ul class="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm">
+            {socials.map(social => (
+              <li>
+                <a
+                  href={social.href}
+                  title={social.linkTitle}
+                  class="text-skin-accent underline decoration-skin-accent/40 underline-offset-4 hover:decoration-skin-accent"
+                >
+                  {social.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <p class="mt-8 text-center font-mono text-xs text-skin-muted">
+      &copy; {currentYear} {SITE.author} &middot; built with Astro
+    </p>
   </div>
 </footer>
-
-<style>
-  footer {
-    @apply w-full;
-  }
-  .footer-wrapper {
-    @apply flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4;
-  }
-  .link-button {
-    @apply my-1 p-2 hover:rotate-6;
-  }
-  .link-button svg {
-    @apply scale-125;
-  }
-  .copyright-wrapper {
-    @apply my-2 flex flex-col items-center whitespace-nowrap sm:flex-row;
-  }
-  .separator {
-    @apply hidden sm:inline;
-  }
-</style>

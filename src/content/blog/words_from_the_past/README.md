@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-08-05T12:01:40Z
 title: Cyber Apocalypse CTF 2026 - Words from the past
+category: ctf
+subcategory: Cyber Apocalypse 2026
 slug: "words_from_the_past"
 featured: true
 tags:

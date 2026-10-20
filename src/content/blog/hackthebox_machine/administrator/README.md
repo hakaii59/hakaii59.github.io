@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-10-07T23:00:00Z
 title: HackTheBox - Administrator
+category: hackthebox
+subcategory: Machine
 slug: "hackethebox-machine-administrator"
 featured: false
 tags:

@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2025-12-12T00:00:00Z
 title: HackTheBox - Echoland
+category: hackthebox
+subcategory: Challenge
 slug: "hackethebox-challenge-echoland"
 featured: false
 tags:

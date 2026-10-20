@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-09-28T23:00:00Z
 title: HackTheBox - Curling
+category: hackthebox
+subcategory: Machine
 slug: "hackethebox-machine-curling"
 featured: false
 tags:

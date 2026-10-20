@@ -1,0 +1,72 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@layouts/Layout.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+import PostExplorer from "@components/PostExplorer";
+import { CATEGORIES, SITE } from "@config";
+import getSortedPosts from "@utils/getSortedPosts";
+import getTagsWithCount from "@utils/getTagsWithCount";
+import getExplorerPosts from "@utils/getExplorerPosts";
+import {
+  getPostsByCategory,
+  getSubcategoriesWithCount,
+} from "@utils/getCategory";
+import type { GetStaticPaths } from "astro";
+import type { Category } from "../../types";
+
+/** One page per section declared in CATEGORIES: /hackthebox/, /ctf/, ... */
+export const getStaticPaths = (() =>
+  CATEGORIES.map(category => ({
+    params: { category: category.key },
+    props: { category },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props as Props;
+
+const allPosts = await getCollection("blog", ({ data }) => !data.draft);
+const posts = getPostsByCategory(getSortedPosts(allPosts), category.key);
+
+// Scoped to this section, so the explorer shows group pills instead of
+// section pills, and only the tags these posts actually use.
+const explorerPosts = getExplorerPosts(posts);
+const subcategories = getSubcategoriesWithCount(posts);
+const tags = getTagsWithCount(posts);
+---
+
+<Layout
+  title={`${category.label} | ${SITE.title}`}
+  description={category.blurb}
+>
+  <Header activeNav={category.key} />
+  <main id="main-content" class="wrap pb-6">
+    <h1 class="prompt-heading">{`ls ${category.key}/`}</h1>
+    <p class="mt-2 text-sm text-skin-muted">
+      {category.blurb} &mdash; {posts.length}
+      {posts.length === 1 ? "post" : "posts"}.
+    </p>
+
+    {
+      posts.length === 0 ? (
+        <p class="mt-10 font-mono text-sm text-skin-muted">
+          Nothing here yet.
+        </p>
+      ) : (
+        <div class="mt-7">
+          <PostExplorer
+            client:load
+            posts={explorerPosts}
+            subcategories={subcategories}
+            tags={tags}
+          />
+        </div>
+      )
+    }
+  </main>
+
+  <Footer />
+</Layout>
